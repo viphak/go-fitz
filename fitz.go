@@ -57,9 +57,9 @@ func (f *Document) Pages() int {
 }
 
 // Image returns image for given page number
-func (f *Document) Image(page int) (image.Image, error) {
+func (f *Document) Image(page int, dpi int) (image.Image, error) {
 	var ctm C.fz_matrix
-	C.fz_scale(&ctm, C.float(4.0), C.float(4.0))
+	C.fz_scale(&ctm, C.float(dpi/72), C.float(dpi/72))
 
 	cs := C.fz_device_rgb(f.ctx)
 	defer C.fz_drop_colorspace(f.ctx, cs)
