@@ -57,13 +57,25 @@ func (f *Document) Pages() int {
 }
 
 // Image returns image for given page number
-func (f *Document) Image(page int, dpi int) (image.Image, error) {
+func (f *Document) Image(page int) (image.Image, error) {
+	return f.ImageWithColor(page, 300, true)
+}
+
+// Image returns image for given page number, include DPI
+func (f *Document) ImageWithDPI(page int, dpi int) (image.Image, error) {
+	return f.ImageWithColor(page, dpi, true)
+}
+
+// Image returns image for given page number, color or gray
+func (f *Document) ImageWithColor(page int, dpi int, isColor bool) (image.Image, error) {
 	var ctm C.fz_matrix
 	C.fz_scale(&ctm, C.float(dpi/72), C.float(dpi/72))
 
 	cs := C.fz_device_rgb(f.ctx)
+	if !isColor {
+		cs = C.fz_device_gray(f.ctx)
+	}
 	defer C.fz_drop_colorspace(f.ctx, cs)
-
 	alpha := C.int(1)
 	pixmap := C.fz_new_pixmap_from_page_number(f.ctx, f.doc, C.int(page), &ctm, cs, alpha)
 	if pixmap == nil {
