@@ -64,7 +64,7 @@ func (f *Document) Image(page int) (image.Image, error) {
 	cs := C.fz_device_rgb(f.ctx)
 	defer C.fz_drop_colorspace(f.ctx, cs)
 
-	alpha := C.int(0)
+	alpha := C.int(1)
 	pixmap := C.fz_new_pixmap_from_page_number(f.ctx, f.doc, C.int(page), &ctm, cs, alpha)
 	if pixmap == nil {
 		return nil, errors.New("fitz: cannot create pixmap")
