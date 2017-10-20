@@ -5,6 +5,10 @@ Simple Golang wrapper for the [MuPDF](http://mupdf.com/) Fitz library that can e
 
 Install
 -------
+```
+brew install mujs openjpeg jbig2dec harfbuzz
+brew install pkg-config
+```
 
 MuPDF version 1.8 is required:
 
