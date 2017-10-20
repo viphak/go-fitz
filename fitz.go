@@ -71,12 +71,17 @@ func (f *Document) ImageWithColor(page int, dpi int, isColor bool) (image.Image,
 	var ctm C.fz_matrix
 	C.fz_scale(&ctm, C.float(dpi/72), C.float(dpi/72))
 
+	stride := 4
 	cs := C.fz_device_rgb(f.ctx)
+	alpha := C.int(1)
+
 	if !isColor {
 		cs = C.fz_device_gray(f.ctx)
+		stride = 1
+		alpha = C.int(0)
 	}
+
 	defer C.fz_drop_colorspace(f.ctx, cs)
-	alpha := C.int(1)
 	pixmap := C.fz_new_pixmap_from_page_number(f.ctx, f.doc, C.int(page), &ctm, cs, alpha)
 	if pixmap == nil {
 		return nil, errors.New("fitz: cannot create pixmap")
@@ -92,10 +97,15 @@ func (f *Document) ImageWithColor(page int, dpi int, isColor bool) (image.Image,
 	}
 
 	rect := image.Rect(int(bbox.x0), int(bbox.y0), int(bbox.x1), int(bbox.y1))
-	bytes := C.GoBytes(unsafe.Pointer(pixels), 4*bbox.x1*bbox.y1)
-	img := &image.RGBA{bytes, 4 * rect.Max.X, rect}
+	bytes := C.GoBytes(unsafe.Pointer(pixels), C.int(stride)*bbox.x1*bbox.y1)
 
-	return img, nil
+	if isColor {
+		img := &image.RGBA{bytes, stride * rect.Max.X, rect}
+		return img, nil
+	} else {
+		img := &image.Gray{bytes, stride * rect.Max.X, rect}
+		return img, nil
+	}
 }
 
 // Close closes the underlying fitz document
